@@ -6,7 +6,7 @@ A minimalistic, zero-dependency, runtime-based DI application framework. It give
 application as a set of distinct components. Dependencies between components are resolved automatically. Runnable
 components—servers, message consumers, and whatnots—are done so automatically in parallel. A proper clean-up mechanism
 is provided. No more bloated mains. No more high effort of wiring a new part of an application with existing ones. The
-framework simplifies the one thing and does so right.
+framework simplifies one thing and does so right.
 
 # Example
 
