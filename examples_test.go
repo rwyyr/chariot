@@ -23,7 +23,9 @@
 package chariot_test
 
 import (
+	"context"
 	"log"
+	"net/http"
 
 	"github.com/rwyyr/chariot"
 )
@@ -81,4 +83,34 @@ func ExampleApp_Retrieve() {
 	}
 
 	log.Printf("The server will listen on %s\n", config.ServerAddr)
+}
+
+func ExampleFuncRunner() {
+	type server chariot.Runner
+
+	newServer := func(config Config) server {
+
+		http.HandleFunc("/foo", func(resp http.ResponseWriter, _ *http.Request) {
+
+			resp.Write([]byte("bar"))
+		})
+
+		return chariot.FuncRunner(func(context.Context) error {
+
+			return http.ListenAndServe(config.ServerAddr, nil)
+		})
+	}
+
+	app, err := chariot.New(chariot.With(
+		NewConfig,
+		newServer,
+	))
+	if err != nil {
+		log.Fatalf("Failed to create an app: %s\n", err)
+	}
+	defer app.Shutdown()
+
+	if err := app.Run(); err != nil {
+		log.Fatalf("Failed running the app: %s\n", err)
+	}
 }
