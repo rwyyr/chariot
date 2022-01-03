@@ -114,3 +114,14 @@ func ExampleFuncRunner() {
 		log.Fatalf("Failed running the app: %s\n", err)
 	}
 }
+
+func ExampleWith() {
+	app, err := chariot.New(chariot.With(
+		NewConfig,
+		NewServer,
+	))
+	if err != nil {
+		log.Fatalf("Failed to create an app: %s\n", err)
+	}
+	defer app.Shutdown()
+}
