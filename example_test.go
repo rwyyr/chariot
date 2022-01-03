@@ -71,7 +71,7 @@ func NewConfig(ctx context.Context, client *http.Client) (Config, error) {
 func NewHTTPClient() *http.Client {
 
 	return &http.Client{
-		Timeout: 5*time.Second,
+		Timeout: 5 * time.Second,
 	}
 }
 
