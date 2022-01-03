@@ -29,8 +29,27 @@ import (
 )
 
 func ExampleNew() {
-	app, err := chariot.New(chariot.With(NewConfig, NewServer))
+	app, err := chariot.New(chariot.With(
+		NewConfig,
+		NewServer,
+	))
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
+	}
+	defer app.Shutdown()
+}
+
+func ExampleApp_Run() {
+	app, err := chariot.New(chariot.With(
+		NewConfig,
+		NewServer,
+	))
+	if err != nil {
+		log.Fatalf("Failed to create an app: %s\n", err)
+	}
+	defer app.Shutdown()
+
+	if err := app.Run(); err != nil {
+		log.Fatalf("Failed running the app: %s\n", err)
 	}
 }
