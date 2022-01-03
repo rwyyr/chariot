@@ -64,3 +64,21 @@ func ExampleApp_Shutdown() {
 	}
 	defer app.Shutdown()
 }
+
+func ExampleApp_Retrieve() {
+	app, err := chariot.New(chariot.With(
+		NewConfig,
+		NewServer,
+	))
+	if err != nil {
+		log.Fatalf("Failed to create an app: %s\n", err)
+	}
+	defer app.Shutdown()
+
+	var config Config
+	if !app.Retrieve(&config) {
+		log.Fatalln("Failed to retrieve a config")
+	}
+
+	log.Printf("The server will listen on %s\n", config.ServerAddr)
+}
