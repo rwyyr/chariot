@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/rwyyr/chariot"
-	"github.com/rwyyr/chariot/example/module/internal/config"
-	"github.com/rwyyr/chariot/example/module/internal/server"
+	"github.com/rwyyr/chariot/example/module/config"
+	"github.com/rwyyr/chariot/example/module/server"
 )
 
 func Module() chariot.Module {

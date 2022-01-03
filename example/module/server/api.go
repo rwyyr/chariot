@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rwyyr/chariot/example/module/internal/config"
+	"github.com/rwyyr/chariot/example/module/config"
 )
 
 type API struct {
