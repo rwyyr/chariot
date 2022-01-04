@@ -26,6 +26,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"syscall"
 	"time"
 
 	"github.com/rwyyr/chariot"
@@ -144,6 +145,21 @@ func ExampleWithComponents() {
 			NewServer,
 		),
 		chariot.WithComponents(&client),
+	)
+	if err != nil {
+		log.Fatalf("Failed to create an app: %s\n", err)
+	}
+	defer app.Shutdown()
+}
+
+func ExampleWithSignals() {
+	app, err := chariot.New(
+		chariot.With(
+			NewConfig,
+			NewServer,
+			NewHTTPClient,
+		),
+		chariot.WithSignals(syscall.SIGTERM),
 	)
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
