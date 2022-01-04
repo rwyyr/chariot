@@ -166,3 +166,21 @@ func ExampleWithSignals() {
 	}
 	defer app.Shutdown()
 }
+
+func ExampleWithInitContext() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	app, err := chariot.New(
+		chariot.With(
+			NewConfig,
+			NewServer,
+			NewHTTPClient,
+		),
+		chariot.WithInitContext(ctx),
+	)
+	if err != nil {
+		log.Fatalf("Failed to create an app: %s\n", err)
+	}
+	defer app.Shutdown()
+}
