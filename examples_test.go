@@ -35,6 +35,7 @@ func ExampleNew() {
 	app, err := chariot.New(chariot.With(
 		NewConfig,
 		NewServer,
+		NewHTTPClient,
 	))
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
@@ -46,6 +47,7 @@ func ExampleApp_Run() {
 	app, err := chariot.New(chariot.With(
 		NewConfig,
 		NewServer,
+		NewHTTPClient,
 	))
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
@@ -61,6 +63,7 @@ func ExampleApp_Shutdown() {
 	app, err := chariot.New(chariot.With(
 		NewConfig,
 		NewServer,
+		NewHTTPClient,
 	))
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
@@ -72,6 +75,7 @@ func ExampleApp_Retrieve() {
 	app, err := chariot.New(chariot.With(
 		NewConfig,
 		NewServer,
+		NewHTTPClient,
 	))
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
@@ -105,6 +109,7 @@ func ExampleFuncRunner() {
 	app, err := chariot.New(chariot.With(
 		NewConfig,
 		newServer,
+		NewHTTPClient,
 	))
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
@@ -120,6 +125,7 @@ func ExampleWith() {
 	app, err := chariot.New(chariot.With(
 		NewConfig,
 		NewServer,
+		NewHTTPClient,
 	))
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)
