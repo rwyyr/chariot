@@ -76,7 +76,6 @@ type FuncRunner func(context.Context) error
 // 'Shutdowner' interface are collected and stored for later use with the 'Shutdown' method. The method is called when
 // the function returns an error.
 func New(funcOptions ...Option) (_ App, err error) {
-
 	var options options
 	for _, option := range funcOptions {
 		option(&options)
@@ -94,7 +93,6 @@ func New(funcOptions ...Option) (_ App, err error) {
 	defer app.defaultCtx()
 
 	defer func() {
-
 		if err == nil {
 			return
 		}
@@ -123,7 +121,6 @@ func New(funcOptions ...Option) (_ App, err error) {
 // returned by a runner starts the termination process during which the context passed to runners is cancelled, and
 // all subsequent errors from other runners will be sequentially passed to the handler before returning the error.
 func (a App) Run(funcOptions ...RunOption) error {
-
 	var options options
 	for _, option := range funcOptions {
 		option(&options)
@@ -136,7 +133,6 @@ func (a App) Run(funcOptions ...RunOption) error {
 		ctx, cancel = context.WithCancel(options.ctx)
 
 		go func(cancel func()) {
-
 			select {
 			case <-a.ctx.Done():
 				cancel()
@@ -156,14 +152,12 @@ func (a App) Run(funcOptions ...RunOption) error {
 	errors := make(chan error, len(a.runners))
 
 	go func() {
-
 		finished.Wait()
 		close(errors)
 	}()
 
 	for _, runner := range a.runners {
 		go func(runner Runner) {
-
 			defer finished.Done()
 
 			if err := runner.Run(runCtx); err != nil {
@@ -192,7 +186,6 @@ func (a App) Run(funcOptions ...RunOption) error {
 // statement that depend on other such objects. It cancels the context associated with the app which renders it
 // unusable afterwards.
 func (a App) Shutdown(funcOptions ...ShutdownOption) {
-
 	defer a.cancel()
 
 	var options options
@@ -207,7 +200,6 @@ func (a App) Shutdown(funcOptions ...ShutdownOption) {
 		ctx, cancel = context.WithCancel(options.ctx)
 
 		go func() {
-
 			select {
 			case <-a.ctx.Done():
 				cancel()
@@ -225,7 +217,6 @@ func (a App) Shutdown(funcOptions ...ShutdownOption) {
 
 // Retrieve retrieves a component. A valid value is a pointer to the type of the component.
 func (a App) Retrieve(ptr interface{}) bool {
-
 	value := reflect.ValueOf(ptr).Elem()
 
 	component, found := a.components[value.Type()]
@@ -240,12 +231,10 @@ func (a App) Retrieve(ptr interface{}) bool {
 
 // Run delegates the execution to the receiver.
 func (r FuncRunner) Run(ctx context.Context) error {
-
 	return r(ctx)
 }
 
 func (a *App) initializeCtx(signals []os.Signal) {
-
 	signals = append(signals, os.Interrupt)
 
 	stopSignals := make(chan os.Signal, 1)
@@ -254,7 +243,6 @@ func (a *App) initializeCtx(signals []os.Signal) {
 	a.ctx, a.cancel = context.WithCancel(context.Background())
 
 	go func() {
-
 		select {
 		case <-stopSignals:
 			a.cancel()
@@ -264,14 +252,12 @@ func (a *App) initializeCtx(signals []os.Signal) {
 }
 
 func (a App) initializeCtxComponent(ctx context.Context) func() {
-
 	cancel := func() {}
 
 	if ctx != nil {
 		ctx, cancel = context.WithCancel(ctx)
 
 		go func() {
-
 			select {
 			case <-a.ctx.Done():
 				cancel()
@@ -291,14 +277,12 @@ func (a App) initializeCtxComponent(ctx context.Context) func() {
 }
 
 func (a App) defaultCtx() {
-
 	a.components[reflect.TypeOf((*context.Context)(nil)).Elem()] = &component{
 		value: reflect.ValueOf(a.ctx),
 	}
 }
 
 func (App) mergeComponentsInitializers(components, initializers []interface{}) []interface{} {
-
 	for _, component := range components {
 		constructor := reflect.MakeFunc(
 			reflect.FuncOf(
@@ -322,7 +306,6 @@ func (App) mergeComponentsInitializers(components, initializers []interface{}) [
 }
 
 func (a *App) collectComponents(initializers []interface{}) ([]initInitializer, error) {
-
 	var inits []initInitializer
 
 	for _, initializer := range initializers {
@@ -370,7 +353,6 @@ func (a *App) collectComponents(initializers []interface{}) ([]initInitializer, 
 }
 
 func (a *App) initializeComponents(initializers []interface{}) ([]initInitializer, error) {
-
 	inits, err := a.collectComponents(initializers)
 	if err != nil {
 		return nil, err
@@ -391,7 +373,6 @@ func (a *App) initializeComponents(initializers []interface{}) ([]initInitialize
 }
 
 func (a *App) initializeComponent(component *component, cycle map[reflect.Type]struct{}) error {
-
 	if component.value.IsValid() {
 		return nil
 	}
@@ -427,7 +408,6 @@ func (a *App) initializeComponent(component *component, cycle map[reflect.Type]s
 }
 
 func (a *App) ins(component *component, cycle map[reflect.Type]struct{}) ([]reflect.Value, error) {
-
 	var ins []reflect.Value
 
 	for _, dependencyType := range component.dependencies {
@@ -453,7 +433,6 @@ func (a *App) ins(component *component, cycle map[reflect.Type]struct{}) ([]refl
 }
 
 func (a App) invokeInits(inits []initInitializer) error {
-
 	for _, init := range inits {
 		var ins []reflect.Value
 		for _, dependency := range init.dependencies {
