@@ -293,7 +293,6 @@ func (App) mergeComponentsInitializers(components, initializers []interface{}) [
 				false,
 			),
 			func([]reflect.Value) []reflect.Value {
-
 				return []reflect.Value{
 					reflect.ValueOf(component),
 				}
