@@ -38,9 +38,7 @@ type ShutdownOption func(*options)
 
 // With provides initializers.
 func With(initializers ...interface{}) Option {
-
 	return func(options *options) {
-
 		options.initializers = append(options.initializers, initializers...)
 	}
 }
@@ -49,18 +47,14 @@ func With(initializers ...interface{}) Option {
 // interfaces work in Go one can't provide a component of an interface type. To bypass the limitation use a constructor
 // instead.
 func WithComponents(components ...interface{}) Option {
-
 	return func(options *options) {
-
 		options.components = append(options.components, components...)
 	}
 }
 
 // WithSignals provides other signals in addition to the default one to cancel the context associated with an app.
 func WithSignals(signals ...os.Signal) Option {
-
 	return func(options *options) {
-
 		options.signals = append(options.signals, signals...)
 	}
 }
@@ -70,18 +64,14 @@ func WithSignals(signals ...os.Signal) Option {
 // will be cancelled as soon as the default one is. The option finds its place when, say, one needs to implement a
 // timed initialization.
 func WithInitContext(ctx context.Context) Option {
-
 	return func(options *options) {
-
 		options.ctx = ctx
 	}
 }
 
 // WithOptions provides an amalgamation of options.
 func WithOptions(funcOptions ...func(*options)) Option {
-
 	return func(options *options) {
-
 		for _, option := range funcOptions {
 			option(options)
 		}
@@ -92,18 +82,14 @@ func WithOptions(funcOptions ...func(*options)) Option {
 // Without the option, the context associated with an app acts as a parent one. It doesn't cease to be taken into
 // account though when the option is provided.
 func WithRunContext(ctx context.Context) RunOption {
-
 	return func(options *options) {
-
 		options.ctx = ctx
 	}
 }
 
 // WithErrHandler provides an error handler.
 func WithErrHandler(handler func(context.Context, error)) RunOption {
-
 	return func(options *options) {
-
 		options.handler = handler
 	}
 }
@@ -112,9 +98,7 @@ func WithErrHandler(handler func(context.Context, error)) RunOption {
 // shutdowners. Without the option, the context associated with an app acts as a parent one. It doesn't cease to be
 // taken into account though when the option is provided.
 func WithShutdownContext(ctx context.Context) ShutdownOption {
-
 	return func(options *options) {
-
 		options.ctx = ctx
 	}
 }
