@@ -32,8 +32,8 @@ import (
 	"sync"
 )
 
-// App denotes an application, a high-level concept that allows to reason about an application as of a set of
-// distinct components. Create it via the 'New' function.
+// App denotes an application, a high-level concept that allows to reason about an application as
+// of a set of distinct components.
 type App struct {
 	ctx         context.Context
 	cancel      func()
@@ -43,14 +43,14 @@ type App struct {
 }
 
 type (
-	// Runner denotes an interface to which components may comply to be run concurrently upon their application's
-	// run. Such components are called "runners".
+	// Runner denotes an interface to which components may comply to be run concurrently upon their
+	// application's run. Such components are called "runners".
 	Runner interface {
 		Run(context.Context) error
 	}
 
-	// Shutdowner denotes an interface to which components may comply to be shut down when the 'New' fails or the
-	// 'Shutdown' method is called. Such components are called "shutdowners".
+	// Shutdowner denotes an interface to which components may comply to be shut down when the
+	// 'New' fails or the 'Shutdown' method is called. Such components are called "shutdowners".
 	Shutdowner interface {
 		Shutdown(context.Context)
 	}
@@ -59,22 +59,25 @@ type (
 // FuncRunner is a quicker way to define a runner-only component.
 type FuncRunner func(context.Context) error
 
-// New initializes a new app. Its main work is, if given a list of initializers, to invoke them in that order that
-// ensures dependencies between them are resolved correctly. An initializer is a function which takes 0..N components
-// and returns 0..N components. The last value returned, if complies with the 'error' type, isn't treated as a
-// component but as an initialization failure. Variadic params are ignored. Initializers that don't produce any
-// components are grouped together and invoked after ones that do. The latter ones are called "constructors". The
-// former ones received the name "inits". The process in some way resembles the way how vars and init funcs work in Go
-// (what is initialized or called first). Components are objects of distinct types. There must not be a duplicating
-// type, and an error is returned in case of any. A dependency between initializers is established when one takes a
-// component returned by another. If a dependency is missing an error is returned. Circular dependencies are caught,
-// and an error is returned in case of any. A context (of type 'context.Context') is provided out of the box. It is
-// associated with the app and continues to be taken into account upon all operations with it even if they may require
-// a separate context. It is cancelled either if the 'SIGINT' signal (or other registered signals, see the
-// corresponding option) is caught or the app's 'Shutdown' method is called. Components that comply with the 'Runner'
-// interface are collected and stored for later use with the 'Run' method. Components that comply with the
-// 'Shutdowner' interface are collected and stored for later use with the 'Shutdown' method. The method is called when
-// the function returns an error.
+// New initializes a new app. Its main work is, if given a list of initializers, to invoke them in
+// that order that ensures dependencies between them are resolved correctly. An initializer is a
+// function which takes 0..N components and returns 0..N components. The last value returned, if
+// complies with the 'error' type, isn't treated as a component but as an initialization failure.
+// Variadic params are ignored. Initializers that don't produce any components are grouped together
+// and invoked after ones that do. The latter ones are called "constructors". The former ones
+// received the name "inits". The process in some way resembles the way how vars and init funcs
+// work in Go (what is initialized or called first). Components are objects of distinct types.
+// There must not be a duplicating type, and an error is returned in case of any. A dependency
+// between initializers is established when one takes a component returned by another. If a
+// dependency is missing an error is returned. Circular dependencies are caught, and an error is
+// returned in case of any. A context (of type 'context.Context') is provided out of the box. It is
+// associated with the app and continues to be taken into account upon all operations with it even
+// if they may require a separate context. It is cancelled either if the 'SIGINT' signal (or other
+// registered signals, see the corresponding option) is caught or the app's 'Shutdown' method is
+// called. Components that comply with the 'Runner' interface are collected and stored for later
+// use with the 'Run' method. Components that comply with the 'Shutdowner' interface are collected
+// and stored for later use with the 'Shutdown' method. The method is called when the function
+// returns an error.
 func New(funcOptions ...Option) (_ App, err error) {
 	var options options
 	for _, option := range funcOptions {
@@ -117,9 +120,10 @@ func New(funcOptions ...Option) (_ App, err error) {
 	return app, nil
 }
 
-// Run runs an app. This means, to run all runners in parallel and wait till their completion. The first error
-// returned by a runner starts the termination process during which the context passed to runners is cancelled, and
-// all subsequent errors from other runners will be sequentially passed to the handler before returning the error.
+// Run runs an app. This means, to run all runners in parallel and wait till their completion. The
+// first error returned by a runner starts the termination process during which the context passed
+// to runners is cancelled, and all subsequent errors from other runners will be sequentially
+// passed to the handler before returning the error.
 func (a App) Run(funcOptions ...RunOption) error {
 	var options options
 	for _, option := range funcOptions {
@@ -181,10 +185,10 @@ func (a App) Run(funcOptions ...RunOption) error {
 	return err
 }
 
-// Shutdown shutdowns an app. It sequentially calls shutdowners collected during the app's initialization in the
-// reverse order they were initialized, essentially, mimicking the typical pattern of freeing objects with the defer
-// statement that depend on other such objects. It cancels the context associated with the app which renders it
-// unusable afterwards.
+// Shutdown shutdowns an app. It sequentially calls shutdowners collected during the app's
+// initialization in the reverse order they were initialized, essentially, mimicking the typical
+// pattern of freeing objects with the defer statement that depend on other such objects. It
+// cancels the context associated with the app which renders it unusable afterwards.
 func (a App) Shutdown(funcOptions ...ShutdownOption) {
 	defer a.cancel()
 

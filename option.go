@@ -27,7 +27,7 @@ import (
 	"os"
 )
 
-// Option is an option that may be passed to the 'New' function.
+// Option denotes an option that may be passed to the 'New' function.
 type Option func(*options)
 
 // RunOption is an option that may be passed to the 'App.Run' method.
@@ -43,26 +43,27 @@ func With(initializers ...interface{}) Option {
 	}
 }
 
-// WithComponents allows to provide a component as a value, not via a constructor. Note, however, that because of how
-// interfaces work in Go one can't provide a component of an interface type. To bypass the limitation use a constructor
-// instead.
+// WithComponents allows to provide a component as a value, not via a constructor. Note, however,
+// that because of how interfaces work in Go one can't provide a component of an interface type. To
+// bypass the limitation use a constructor instead.
 func WithComponents(components ...interface{}) Option {
 	return func(options *options) {
 		options.components = append(options.components, components...)
 	}
 }
 
-// WithSignals provides other signals in addition to the default one to cancel the context associated with an app.
+// WithSignals provides other signals in addition to the default one to cancel the context
+// associated with an app.
 func WithSignals(signals ...os.Signal) Option {
 	return func(options *options) {
 		options.signals = append(options.signals, signals...)
 	}
 }
 
-// WithInitContext provides an alternative context to be available as a component upon the initialization rather than
-// the default one. The latter doesn't cease to be taken into account though. This means, the context provided this way
-// will be cancelled as soon as the default one is. The option finds its place when, say, one needs to implement a
-// timed initialization.
+// WithInitContext provides an alternative context to be available as a component upon the
+// initialization rather than the default one. The latter doesn't cease to be taken into account
+// though. This means, the context provided this way will be cancelled as soon as the default one
+// is. The option finds its place when, say, one needs to implement a timed initialization.
 func WithInitContext(ctx context.Context) Option {
 	return func(options *options) {
 		options.ctx = ctx
@@ -78,9 +79,9 @@ func WithOptions(funcOptions ...func(*options)) Option {
 	}
 }
 
-// WithRunContext provides an alternative context to be used as a parent context for the context passed to runners.
-// Without the option, the context associated with an app acts as a parent one. It doesn't cease to be taken into
-// account though when the option is provided.
+// WithRunContext provides an alternative context to be used as a parent context for the context
+// passed to runners. Without the option, the context associated with an app acts as a parent one.
+// It doesn't cease to be taken into account though when the option is provided.
 func WithRunContext(ctx context.Context) RunOption {
 	return func(options *options) {
 		options.ctx = ctx
@@ -94,9 +95,9 @@ func WithErrHandler(handler func(context.Context, error)) RunOption {
 	}
 }
 
-// WithShutdownContext provides an alternative context to be used as a parent context for the context passed to
-// shutdowners. Without the option, the context associated with an app acts as a parent one. It doesn't cease to be
-// taken into account though when the option is provided.
+// WithShutdownContext provides an alternative context to be used as a parent context for the
+// context passed to shutdowners. Without the option, the context associated with an app acts as a
+// parent one. It doesn't cease to be taken into account though when the option is provided.
 func WithShutdownContext(ctx context.Context) ShutdownOption {
 	return func(options *options) {
 		options.ctx = ctx
