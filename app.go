@@ -308,9 +308,8 @@ func (App) mergeComponentsInitializers(components, initializers []interface{}) [
 	return initializers
 }
 
-func (a *App) collectComponents(initializers []interface{}) ([]initInitializer, error) {
-	var inits []initInitializer
-
+func (a *App) collectComponents(initializers []interface{}) ([]initFunc, error) {
+	var inits []initFunc
 	for _, initializer := range initializers {
 		initializerType := reflect.TypeOf(initializer)
 
@@ -318,7 +317,6 @@ func (a *App) collectComponents(initializers []interface{}) ([]initInitializer, 
 		if initializerType.IsVariadic() {
 			num--
 		}
-
 		var dependencies []reflect.Type
 		for i := 0; i < num; i++ {
 			dependencies = append(dependencies, initializerType.In(i))
@@ -328,9 +326,8 @@ func (a *App) collectComponents(initializers []interface{}) ([]initInitializer, 
 		if last := num - 1; last >= 0 && initializerType.Out(last).Implements(reflect.TypeOf((*error)(nil)).Elem()) {
 			num = last
 		}
-
 		if num == 0 {
-			inits = append(inits, initInitializer{
+			inits = append(inits, initFunc{
 				dependencies: dependencies,
 				init:         reflect.ValueOf(initializer),
 			})
@@ -355,7 +352,7 @@ func (a *App) collectComponents(initializers []interface{}) ([]initInitializer, 
 	return inits, nil
 }
 
-func (a *App) initializeComponents(initializers []interface{}) ([]initInitializer, error) {
+func (a *App) initializeComponents(initializers []interface{}) ([]initFunc, error) {
 	inits, err := a.collectComponents(initializers)
 	if err != nil {
 		return nil, err
@@ -435,7 +432,7 @@ func (a *App) ins(component *component, cycle map[reflect.Type]struct{}) ([]refl
 	return ins, nil
 }
 
-func (a App) invokeInits(inits []initInitializer) error {
+func (a App) invokeInits(inits []initFunc) error {
 	for _, init := range inits {
 		var ins []reflect.Value
 		for _, dependency := range init.dependencies {
@@ -461,7 +458,7 @@ func (a App) invokeInits(inits []initInitializer) error {
 	return nil
 }
 
-type initInitializer struct {
+type initFunc struct {
 	dependencies []reflect.Type
 	init         reflect.Value
 }
