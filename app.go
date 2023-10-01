@@ -32,8 +32,8 @@ import (
 	"sync"
 )
 
-// App denotes an application, a high-level concept that allows to reason about an application as
-// of a set of distinct components.
+// App is a DI container supplemented with a compact set of related logic aimed to facilitate the
+// process of initialization of applications composed of multiple components or modules.
 type App struct {
 	ctx         context.Context
 	cancel      func()
@@ -43,20 +43,21 @@ type App struct {
 }
 
 type (
-	// Runner denotes an interface to which components may comply to be run concurrently upon their
-	// application's run. Such components are called "runners".
+	// Runner stands for any conformant component that is collected during its initialization by an
+	// app so later to be concurrently run by the app upon invocation of its Run method.
 	Runner interface {
 		Run(context.Context) error
 	}
 
-	// Shutdowner denotes an interface to which components may comply to be shut down when the
-	// 'New' fails or the 'Shutdown' method is called. Such components are called "shutdowners".
+	// Shutdowner stands for any conformant component that is collected during its initialization
+	// by an app so to be invoked either when its Shutdown method is called or the app itself fails
+	// to initalize.
 	Shutdowner interface {
 		Shutdown(context.Context)
 	}
 )
 
-// FuncRunner is a quicker way to define a runner-only component.
+// FuncRunner is a quick way to introduce a Runner-conformant component.
 type FuncRunner func(context.Context) error
 
 // New initializes a new app. Its main work is, if given a list of initializers, to invoke them in
@@ -120,10 +121,11 @@ func New(funcOptions ...Option) (_ App, err error) {
 	return app, nil
 }
 
-// Run runs an app. This means, to run all runners in parallel and wait till their completion. The
-// first error returned by a runner starts the termination process during which the context passed
-// to runners is cancelled, and all subsequent errors from other runners will be sequentially
-// passed to the handler before returning the error.
+// Run runs previously collected Runner-conformant components in a concurrent manner with respect
+// to errors returned by them in the process. In case of any the context provided to them is
+// cancelled and the method waits till other components finish their work. Errors returned at this
+// stage are provided in a sequential manner to a handler if set. The error that triggered the
+// event is returned. Otherwise, the method returns nil.
 func (a App) Run(funcOptions ...RunOption) error {
 	var options options
 	for _, option := range funcOptions {

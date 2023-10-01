@@ -30,7 +30,7 @@ import (
 // Option denotes an option that may be passed to the 'New' function.
 type Option func(*options)
 
-// RunOption is an option that may be passed to the 'App.Run' method.
+// RunOption is an option one can provide to the App's Run method.
 type RunOption func(*options)
 
 // ShutdownOption is an option that may be passed to the 'App.Shutdown' method.
@@ -79,9 +79,10 @@ func WithOptions(funcOptions ...func(*options)) Option {
 	}
 }
 
-// WithRunContext provides an alternative context to be used as a parent context for the context
-// passed to runners. Without the option, the context associated with an app acts as a parent one.
-// It doesn't cease to be taken into account though when the option is provided.
+// WithRunContext provides a context to be used as a parent one to a context provided to
+// Runner-conformant components upon their invocation as a part of the App's Run method. Otherwise,
+// the one associated with an app is used. Note, however, that the latter is still taken into
+// account even if a context is provided.
 func WithRunContext(ctx context.Context) RunOption {
 	return func(options *options) {
 		options.ctx = ctx
