@@ -124,67 +124,60 @@ func New(funcOptions ...Option) (_ App, err error) {
 // Run runs previously collected Runner-conformant components in a concurrent manner with respect
 // to errors returned by them in the process. In case of any the context provided to them is
 // cancelled and the method waits till other components finish their work. Errors returned at this
-// stage are provided in a sequential manner to a handler if set. The error that triggered the
-// event is returned. Otherwise, the method returns nil.
+// stage are collected and an aggregated error is returned. In case there was no error the method
+// returns nil.
 func (a App) Run(funcOptions ...RunOption) error {
 	var options options
 	for _, option := range funcOptions {
 		option(&options)
 	}
 
-	ctx, cancel := context.WithCancel(a.ctx)
+	var (
+		ctx    context.Context
+		cancel func()
+	)
 	if options.ctx != nil {
-		cancel()
-
 		ctx, cancel = context.WithCancel(options.ctx)
-
-		go func(cancel func()) {
+		go func() {
 			select {
 			case <-a.ctx.Done():
 				cancel()
 			case <-ctx.Done():
-				cancel()
 			}
-		}(cancel)
+		}()
+	} else {
+		ctx, cancel = context.WithCancel(a.ctx)
 	}
 	defer cancel()
 
-	runCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	var finished sync.WaitGroup
+	var (
+		finished  sync.WaitGroup
+		runErrors = make(chan error, len(a.runners))
+	)
 	finished.Add(len(a.runners))
-
-	errors := make(chan error, len(a.runners))
-
-	go func() {
-		finished.Wait()
-		close(errors)
-	}()
-
 	for _, runner := range a.runners {
 		go func(runner Runner) {
 			defer finished.Done()
-
-			if err := runner.Run(runCtx); err != nil {
-				errors <- err
+			if err := runner.Run(ctx); err != nil {
+				runErrors <- err
 			}
 		}(runner)
 	}
-
-	err, ok := <-errors
+	go func() {
+		finished.Wait()
+		close(runErrors)
+	}()
+	err, ok := <-runErrors
 	if !ok {
 		return nil
 	}
-
 	cancel()
-	for err := range errors {
-		if options.handler != nil {
-			options.handler(ctx, err)
-		}
+	subsequentErrors := make([]error, 0, len(a.runners)-1)
+	for err := range runErrors {
+		subsequentErrors = append(subsequentErrors, err)
 	}
 
-	return err
+	return errors.Join(append([]error{err}, subsequentErrors...)...)
 }
 
 // Shutdown shutdowns an app. It sequentially calls shutdowners collected during the app's

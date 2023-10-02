@@ -89,13 +89,6 @@ func WithRunContext(ctx context.Context) RunOption {
 	}
 }
 
-// WithErrHandler provides an error handler.
-func WithErrHandler(handler func(context.Context, error)) RunOption {
-	return func(options *options) {
-		options.handler = handler
-	}
-}
-
 // WithShutdownContext provides an alternative context to be used as a parent context for the
 // context passed to shutdowners. Without the option, the context associated with an app acts as a
 // parent one. It doesn't cease to be taken into account though when the option is provided.

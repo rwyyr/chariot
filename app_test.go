@@ -60,6 +60,10 @@ type (
 
 type Error struct{}
 
+type Unwrapper interface {
+	Unwrap() []error
+}
+
 func TestNewApp(t *testing.T) {
 
 	t.Run("common-case", func(t *testing.T) {
@@ -625,15 +629,11 @@ func TestAppRun(t *testing.T) {
 	})
 
 	t.Run("error-returned", func(t *testing.T) {
-
 		testErr := errors.New("test error")
-
 		app, err := chariot.New(chariot.With(
 			func() (*A, error) {
-
 				var a A
 				a.mocks.Run = func(context.Context) error {
-
 					return testErr
 				}
 
@@ -645,27 +645,25 @@ func TestAppRun(t *testing.T) {
 		}
 		defer app.Shutdown()
 
-		if err := app.Run(); !errors.Is(err, testErr) {
+		err = app.Run()
+		if !errors.Is(err, testErr) {
+			t.Fatal(err)
+		}
+		if len(err.(Unwrapper).Unwrap()) > 1 {
 			t.Fatal(err)
 		}
 	})
 
-	t.Run("two-errors", func(t *testing.T) {
-
+	t.Run("multiple-errors", func(t *testing.T) {
 		testErr1, testErr2 := errors.New("test error 1"), errors.New("test error 2")
-
 		app, err := chariot.New(chariot.With(
 			func() (A, *B) {
-
 				var a A
 				a.mocks.Run = func(context.Context) error {
-
 					return testErr1
 				}
-
 				var b B
 				b.mocks.Run = func(context.Context) error {
-
 					return testErr2
 				}
 
@@ -677,54 +675,31 @@ func TestAppRun(t *testing.T) {
 		}
 		defer app.Shutdown()
 
-		var secondErr error
-
-		if err := app.Run(chariot.WithErrHandler(func(_ context.Context, err error) {
-
-			secondErr = err
-		})); err != nil {
-			if !(errors.Is(err, testErr1) || errors.Is(err, testErr2)) {
-				t.Fatal(err)
-			}
-
-			if !(errors.Is(secondErr, testErr1) || errors.Is(secondErr, testErr2)) {
-				t.Fatal(err)
-			}
-
-			if err == secondErr {
-				t.FailNow()
-			}
-
-			return
+		err = app.Run()
+		if !(errors.Is(err, testErr1) && errors.Is(err, testErr2)) {
+			t.Fatal(err)
 		}
-
-		t.FailNow()
+		if len(err.(Unwrapper).Unwrap()) > 2 {
+			t.Fatal(err)
+		}
 	})
 
-	t.Run("error-cancel", func(t *testing.T) {
-
+	t.Run("error-cancels", func(t *testing.T) {
 		testErr := errors.New("test error")
-
 		var called bool
-
 		app, err := chariot.New(chariot.With(
 			func() A {
-
 				var a A
 				a.mocks.Run = func(context.Context) error {
-
 					return testErr
 				}
 
 				return a
 			},
 			func() B {
-
 				var b B
 				b.mocks.Run = func(ctx context.Context) error {
-
 					called = true
-
 					<-ctx.Done()
 
 					return nil
@@ -738,19 +713,16 @@ func TestAppRun(t *testing.T) {
 		}
 		defer app.Shutdown()
 
-		if err := app.Run(); err != nil {
-			if !errors.Is(err, testErr) {
-				t.Fatal(err)
-			}
-
-			if !called {
-				t.FailNow()
-			}
-
-			return
+		err = app.Run()
+		if !errors.Is(err, testErr) {
+			t.Fatal(err)
 		}
-
-		t.FailNow()
+		if len(err.(Unwrapper).Unwrap()) > 1 {
+			t.Fatal(err)
+		}
+		if !called {
+			t.FailNow()
+		}
 	})
 
 	t.Run("with-context", func(t *testing.T) {
