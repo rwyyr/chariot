@@ -90,11 +90,9 @@ func New(funcOptions ...Option) (_ App, err error) {
 	}
 
 	app.initializeCtx(options.signals)
-
-	cancel := app.initializeCtxComponent(options.ctx)
+	cancel := app.setCtxComponent(options.ctx)
 	defer cancel()
-
-	defer app.defaultCtx()
+	defer app.resetCtxComponent()
 
 	defer func() {
 		if err == nil {
@@ -237,7 +235,7 @@ func (a *App) initializeCtx(signals []os.Signal) {
 	a.ctx, a.cancel = signal.NotifyContext(context.Background(), append(signals, os.Interrupt)...)
 }
 
-func (a App) initializeCtxComponent(ctx context.Context) func() {
+func (a App) setCtxComponent(ctx context.Context) func() {
 	cancel := func() {}
 	if ctx != nil {
 		ctx, cancel = context.WithCancel(ctx)
@@ -258,7 +256,7 @@ func (a App) initializeCtxComponent(ctx context.Context) func() {
 	return cancel
 }
 
-func (a App) defaultCtx() {
+func (a App) resetCtxComponent() {
 	a.components[reflect.TypeOf((*context.Context)(nil)).Elem()] = &component{
 		value: reflect.ValueOf(a.ctx),
 	}
