@@ -239,22 +239,18 @@ func (a *App) initializeCtx(signals []os.Signal) {
 
 func (a App) initializeCtxComponent(ctx context.Context) func() {
 	cancel := func() {}
-
 	if ctx != nil {
 		ctx, cancel = context.WithCancel(ctx)
-
 		go func() {
 			select {
 			case <-a.ctx.Done():
 				cancel()
 			case <-ctx.Done():
-				cancel()
 			}
 		}()
 	} else {
 		ctx = a.ctx
 	}
-
 	a.components[reflect.TypeOf((*context.Context)(nil)).Elem()] = &component{
 		value: reflect.ValueOf(ctx),
 	}
