@@ -234,20 +234,7 @@ func (r FuncRunner) Run(ctx context.Context) error {
 }
 
 func (a *App) initializeCtx(signals []os.Signal) {
-	signals = append(signals, os.Interrupt)
-
-	stopSignals := make(chan os.Signal, 1)
-	signal.Notify(stopSignals, signals...)
-
-	a.ctx, a.cancel = context.WithCancel(context.Background())
-
-	go func() {
-		select {
-		case <-stopSignals:
-			a.cancel()
-		case <-a.ctx.Done():
-		}
-	}()
+	a.ctx, a.cancel = signal.NotifyContext(context.Background(), append(signals, os.Interrupt)...)
 }
 
 func (a App) initializeCtxComponent(ctx context.Context) func() {
