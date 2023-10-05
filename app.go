@@ -98,10 +98,8 @@ func New(funcOptions ...Option) (_ App, err error) {
 		if err == nil {
 			return
 		}
-
 		var ctx context.Context
 		app.Retrieve(&ctx)
-
 		app.Shutdown(WithShutdownContext(ctx))
 	}()
 
@@ -111,7 +109,6 @@ func New(funcOptions ...Option) (_ App, err error) {
 	if err != nil {
 		return App{}, err
 	}
-
 	if err := app.invokeInits(inits); err != nil {
 		return App{}, err
 	}
