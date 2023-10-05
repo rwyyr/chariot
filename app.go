@@ -119,7 +119,7 @@ func New(funcOptions ...Option) (_ App, err error) {
 // Run runs previously collected Runner-conformant components in a concurrent manner with respect
 // to errors returned by them in the process. In case of any the context provided to them is
 // cancelled and the method waits till other components finish their work. Errors returned at this
-// stage are collected and an aggregated error is returned (containing the one that triggered the
+// stage are collected and an aggregated error is returned (placing the one that triggered the
 // event at the head of the underlying list). In case there was no error the method returns nil.
 func (a App) Run(funcOptions ...RunOption) error {
 	var options options
