@@ -172,12 +172,12 @@ func ExampleWithInitContext() {
 	defer cancel()
 
 	app, err := chariot.New(
+		chariot.WithContext(ctx),
 		chariot.With(
 			NewConfig,
 			NewServer,
 			NewHTTPClient,
 		),
-		chariot.WithInitContext(ctx),
 	)
 	if err != nil {
 		log.Fatalf("Failed to create an app: %s\n", err)

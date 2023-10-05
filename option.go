@@ -60,11 +60,10 @@ func WithSignals(signals ...os.Signal) Option {
 	}
 }
 
-// WithInitContext provides an alternative context to be available as a component upon the
-// initialization rather than the default one. The latter doesn't cease to be taken into account
-// though. This means, the context provided this way will be cancelled as soon as the default one
-// is. The option finds its place when, say, one needs to implement a timed initialization.
-func WithInitContext(ctx context.Context) Option {
+// WithContext provides a parent to a context immediately available to other components upon
+// initialization. If not provided the context associated with an app is used. Note, however, that
+// the latter is still taken into account even if a context is provided.
+func WithContext(ctx context.Context) Option {
 	return func(options *options) {
 		options.ctx = ctx
 	}

@@ -450,7 +450,7 @@ func TestNewApp(t *testing.T) {
 		testA := new(A)
 
 		app, err := chariot.New(
-			chariot.WithInitContext(ctx),
+			chariot.WithContext(ctx),
 			chariot.With(func(ctx context.Context) *A {
 
 				if value := ctx.Value(key); value != key {
