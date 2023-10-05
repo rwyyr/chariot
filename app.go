@@ -175,35 +175,35 @@ func (a App) Run(funcOptions ...RunOption) error {
 	return errors.Join(append([]error{err}, subsequentErrors...)...)
 }
 
-// Shutdown shutdowns an app. It sequentially calls shutdowners collected during the app's
-// initialization in the reverse order they were initialized, essentially, mimicking the typical
-// pattern of freeing objects with the defer statement that depend on other such objects. It
-// cancels the context associated with the app which renders it unusable afterwards.
+// Shutdown releases resources associated with an app and invokes Shutdowner-conformant components
+// collected during the initialization of the app in the reverse order they were collected. The
+// latter is akin to the common way of releasing resources of multiple objects in defer statements.
+// Once shut down the app is rendered unusable afterwards.
 func (a App) Shutdown(funcOptions ...ShutdownOption) {
-	defer a.cancel()
-
 	var options options
 	for _, option := range funcOptions {
 		option(&options)
 	}
 
-	ctx, cancel := context.WithCancel(a.ctx)
+	defer a.cancel()
+
+	var (
+		ctx    context.Context
+		cancel func()
+	)
 	if options.ctx != nil {
-		cancel()
-
 		ctx, cancel = context.WithCancel(options.ctx)
-
 		go func() {
 			select {
 			case <-a.ctx.Done():
 				cancel()
 			case <-ctx.Done():
-				cancel()
 			}
 		}()
+	} else {
+		ctx, cancel = context.WithCancel(a.ctx)
 	}
 	defer cancel()
-
 	for i := len(a.shutdowners) - 1; i >= 0; i-- {
 		a.shutdowners[i].Shutdown(ctx)
 	}
