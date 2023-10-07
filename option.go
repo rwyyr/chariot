@@ -27,7 +27,7 @@ import (
 	"os"
 )
 
-// Option denotes an option that may be passed to the 'New' function.
+// Option is an option one can provide to the New function.
 type Option func(*options)
 
 // RunOption is an option one can provide to the App's Run method.
@@ -43,33 +43,32 @@ func With(initializers ...interface{}) Option {
 	}
 }
 
-// WithComponents allows to provide a component as a value, not via a constructor. Note, however,
-// that because of how interfaces work in Go one can't provide a component of an interface type. To
-// bypass the limitation use a constructor instead.
+// WithComponents provides a component as a value, not via a constructor. Note, however, that
+// because of intricacies of interface assignment one can't provide a component of an interface
+// type this way. Resort to using a constructor to bypass the limitation.
 func WithComponents(components ...interface{}) Option {
 	return func(options *options) {
 		options.components = append(options.components, components...)
 	}
 }
 
-// WithSignals provides other signals in addition to the default one to cancel the context
-// associated with an app.
+// WithSignals provides additional signals to extend the list that controls the behavior of a
+// prepackaged context.
 func WithSignals(signals ...os.Signal) Option {
 	return func(options *options) {
 		options.signals = append(options.signals, signals...)
 	}
 }
 
-// WithContext provides a parent to a context immediately available to other components upon
-// initialization. If not provided the context associated with an app is used. Note, however, that
-// the latter is still taken into account even if a context is provided.
+// WithContext provides a replacement to a prepackaged context for the duration of the function.
+// Note, however, that the latter is still taken into account even if a replacement is provided.
 func WithContext(ctx context.Context) Option {
 	return func(options *options) {
 		options.ctx = ctx
 	}
 }
 
-// WithOptions provides an amalgamation of options.
+// WithOptions provides a combination of options.
 func WithOptions(funcOptions ...func(*options)) Option {
 	return func(options *options) {
 		for _, option := range funcOptions {
@@ -78,10 +77,9 @@ func WithOptions(funcOptions ...func(*options)) Option {
 	}
 }
 
-// WithRunContext provides a context to be used as a parent one to a context provided to
-// Runner-conformant components upon their invocation as a part of the App's Run method. Otherwise,
-// the one associated with an app is used. Note, however, that the latter is still taken into
-// account even if a context is provided.
+// WithRunContext provides a replacement to a context provided to the components. Otherwise, the
+// one associated with an app is used. Note, however, that the latter is still taken into account
+// even if a replacement is provided.
 func WithRunContext(ctx context.Context) RunOption {
 	return func(options *options) {
 		options.ctx = ctx

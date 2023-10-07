@@ -60,25 +60,23 @@ type (
 // FuncRunner is a quick way to introduce a Runner-conformant component.
 type FuncRunner func(context.Context) error
 
-// New initializes a new app. Its main work is, if given a list of initializers, to invoke them in
-// that order that ensures dependencies between them are resolved correctly. An initializer is a
-// function which takes 0..N components and returns 0..N components. The last value returned, if
-// complies with the 'error' type, isn't treated as a component but as an initialization failure.
-// Variadic params are ignored. Initializers that don't produce any components are grouped together
-// and invoked after ones that do. The latter ones are called "constructors". The former ones
-// received the name "inits". The process in some way resembles the way how vars and init funcs
-// work in Go (what is initialized or called first). Components are objects of distinct types.
-// There must not be a duplicating type, and an error is returned in case of any. A dependency
-// between initializers is established when one takes a component returned by another. If a
-// dependency is missing an error is returned. Circular dependencies are caught, and an error is
-// returned in case of any. A context (of type 'context.Context') is provided out of the box. It is
-// associated with the app and continues to be taken into account upon all operations with it even
-// if they may require a separate context. It is cancelled either if the 'SIGINT' signal (or other
-// registered signals, see the corresponding option) is caught or the app's 'Shutdown' method is
-// called. Components that comply with the 'Runner' interface are collected and stored for later
-// use with the 'Run' method. Components that comply with the 'Shutdowner' interface are collected
-// and stored for later use with the 'Shutdown' method. The method is called when the function
-// returns an error.
+// New instantiates a new app, namely to initialize components provided as a set (effectively, a
+// DAG) of initializers automatically resolving dependencies among them. A component is an instance
+// of a type. No restrictions on types except 1) they must be distinct and 2) a special treatment
+// of the error type which is further described. An initializer is a function. Can be of two
+// flavors: one returning 1..N components called a constructor and another returning 0 components
+// called an init (borrowing the term from Go). Both can have dependencies listed as arguments they
+// take barring a variadic one. A missing dependency causes an error. Circular dependencies are
+// prohibited. Both can return an error as the last returning value that won't be treated as a
+// component. An error returned this way disrupts the instantiation process causing the function to
+// return with the error. In the more general case, not only an error originating in the process is
+// returned but the Shutdown method is invoked to ensure a graceful clean-up. Constructors are
+// invoked first followed by inits (akin to how instantiation of global vars and invocation of
+// init funcs are arranged in Go). The app is prepackaged with a context.Context component that is
+// associated with it and cancelled when the SIGINT signal is caught or the app has been shut down.
+// A few options are there to control the behavior. Lastly, components conformant to the Runner
+// and/or the Shutdowner interfaces are collected and stored for a later usage when the app's
+// corresponding methods are invoked.
 func New(funcOptions ...Option) (_ App, err error) {
 	var options options
 	for _, option := range funcOptions {
